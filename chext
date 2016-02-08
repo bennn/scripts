@@ -1,0 +1,44 @@
+#! /usr/bin/env racket
+#lang racket/base
+
+(define HERE 'chext)
+
+;; Return the index of character `c` in string `str`.
+;;  or #f is `c` is not found in the string
+;; (-> String Char)
+(define (string-index str c)
+  (for/first ([char (in-string str)]
+              [i (in-naturals)]
+              #:when (eq? char c))
+    i))
+
+(define ((replace-extension new-ext) fname)
+  (define last-dot
+    (or (string-index fname #\.)
+        (raise-user-error HERE (format "Could not infer file extension for '~a'" fname))))
+  (string-append (substring fname 0 last-dot) "." new-ext))
+
+(define (files-exist? file*)
+  (for ([f (in-list file*)])
+    (unless (file-exists? f)
+      (raise-user-error HERE (format "File '~a' does not exist, cannot change extension" f)))))
+
+(define (locations-free? file*)
+  (for ([f (in-list file*)])
+    (when (file-exists? f)
+      (raise-user-error HERE (format "Destination '~a' already exists, refusing to overwrite" f)))))
+
+(define (move-file src dst)
+  (rename-file-or-directory src dst #f))
+
+(module+ main
+  (require racket/cmdline)
+  (command-line
+   #:program (symbol->string HERE)
+   #:args (NEW-EXTENSION . FILE*)
+   (let ([new-file* (map (replace-extension NEW-EXTENSION) FILE*)])
+     (and
+       (files-exist? FILE*)
+       (locations-free? new-file*)
+       (map move-file FILE* new-file*)
+       (void)))))

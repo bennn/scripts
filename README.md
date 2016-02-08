@@ -3,6 +3,7 @@ Scripts
 
 Miscellanous scripts.
 
+- `./chext md *.txt` Convert all .txt files in current directory to .md files
 - `color-log.py` For printing simple, color-coded log messages.
 - `latex.py` Essential LaTeX bindings for Python. It gets the slashes right.
 - `matplotlib-2d.py` Bindings for a few 2-dimensional matplotlib graphs.
