@@ -1,0 +1,17 @@
+#!/usr/bin/env racket
+#lang racket/base
+
+(require
+  (only-in racket/format ~a)
+  (only-in racket/path path-get-extension))
+
+(let* ([H (make-hash)]
+       [H++ (lambda (b)
+              (when (bytes? b)
+                (let ([k (bytes->string/utf-8 b)])
+                  (hash-set! H k (+ 1 (hash-ref H k 0))))))])
+  (for-each (compose1 H++ path-get-extension) (directory-list))
+  (let* ([min-width (apply max (map string-length (hash-keys H)))]
+         [pad (lambda (s) (~a s #:min-width min-width))])
+    (for ([(k v) (in-hash H)])
+      (displayln (string-append (pad k) "\t" (number->string v))))))
